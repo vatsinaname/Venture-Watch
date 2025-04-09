@@ -6,8 +6,8 @@ An AI-powered agent system that helps job seekers discover newly funded startups
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/startup-agent.git
-cd startup-agent
+git clone https://github.com/vatsinaname/Venture-Watch.git
+cd Venture-Watch
 
 # Install dependencies
 pip install -r startup_agent/requirements.txt
@@ -16,12 +16,35 @@ pip install -r startup_agent/requirements.txt
 python install.py
 
 # Configure your API keys
-cp startup_agent/.env.example startup_agent/.env
+cp startup_agent/env.example startup_agent/.env
 # Edit the .env file with your API keys
 
 # Run the agent
-startup-agent --run
+python run.py
 ```
+
+## Interactive Dashboard
+
+Venture Watch includes an interactive Streamlit dashboard for exploring startup data:
+
+```bash
+# Run the dashboard
+python -m startup_agent.run_dashboard
+```
+
+The dashboard provides:
+- Visual analytics of startups by category, tech stack, and funding round
+- Detailed company profiles with filtering capabilities
+- Export options to PDF and CSV formats
+- Interactive data exploration
+
+## Report Formats
+
+Venture Watch supports multiple report formats:
+
+1. **HTML Reports** - Beautiful, formatted emails with startup details
+2. **PDF Reports** - Professional PDF documents generated using ReportLab
+3. **CSV Export** - Tabular data for further analysis in spreadsheet software
 
 ## Project Architecture
 
@@ -29,7 +52,7 @@ This multi-agent system uses LangChain and OpenAI's GPT models to:
 
 1. Collect startup funding data from Crunchbase API
 2. Analyze company details to extract tech stack and hiring needs
-3. Generate beautiful HTML reports delivered to your inbox
+3. Generate beautiful reports in multiple formats
 
 For more details, see the [project documentation](startup_agent/README.md).
 

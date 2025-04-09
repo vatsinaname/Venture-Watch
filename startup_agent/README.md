@@ -8,13 +8,15 @@ This multi-agent system consists of:
 
 1. **Startup Intelligence Collector**: Identifies funded startups using Crunchbase API
 2. **Company Researcher**: Uses LLMs to analyze startups' products, tech stack, and likely hiring needs
-3. **Report Generator**: Creates beautiful HTML reports with startup insights
+3. **Report Generator**: Creates beautiful reports in multiple formats (HTML, PDF)
+4. **Interactive Dashboard**: Streamlit-based UI for exploring startup data
 
 ## Features
 
 - Daily or weekly email reports with newly funded startups
 - AI-powered analysis of company tech stacks and potential roles
-- Beautiful HTML reports with detailed company information
+- Multiple report formats (HTML, PDF, CSV)
+- Interactive dashboard for data exploration
 - Scheduling system to automate the entire pipeline
 
 ## Setup Instructions
@@ -22,14 +24,14 @@ This multi-agent system consists of:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/startup-agent.git
-cd startup-agent
+git clone https://github.com/vatsinaname/Venture-Watch.git
+cd Venture-Watch
 ```
 
 ### 2. Install dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install -r startup_agent/requirements.txt
 ```
 
 ### 3. Set up API keys
@@ -37,7 +39,7 @@ pip install -r requirements.txt
 Copy the example environment file and fill in your API keys:
 
 ```bash
-cp .env.example .env
+cp startup_agent/.env.example startup_agent/.env
 ```
 
 Edit the `.env` file with your API keys and configuration:
@@ -50,7 +52,7 @@ Edit the `.env` file with your API keys and configuration:
 ### 4. Run the pipeline
 
 ```bash
-python -m startup_agent.main
+python run.py
 ```
 
 This will:
@@ -58,12 +60,26 @@ This will:
 2. Analyze companies with AI
 3. Generate and send a report
 
-### 5. Schedule automatic runs
+### 5. Launch the dashboard
+
+To explore the data interactively:
+
+```bash
+python -m startup_agent.run_dashboard
+```
+
+This will start a Streamlit server at http://localhost:8501 where you can:
+- Filter startups by category, tech stack, and funding round
+- View detailed company profiles
+- Generate custom PDF reports
+- Export data to CSV
+
+### 6. Schedule automatic runs
 
 To run the pipeline on a schedule:
 
 ```bash
-python -m startup_agent.schedule_pipeline
+python -m startup_agent.main --schedule
 ```
 
 ## Testing
@@ -99,9 +115,13 @@ startup_agent/
 │   ├── company_researcher.py # Agent 2: LLM analysis of companies
 │   └── report_generator.py   # Agent 5: Creates reports
 ├── data/                     # Storage for collected and processed data
-├── utils/                    # Utility functions
+├── utils/
+│   ├── helpers.py            # Utility functions
+│   └── pdf_generator.py      # PDF report generation
 ├── tests/                    # Unit tests
 ├── scripts/                  # Standalone scripts
+├── dashboard.py              # Streamlit dashboard
+├── run_dashboard.py          # Dashboard launcher
 ├── config.py                 # Configuration settings
 ├── main.py                   # Main orchestrator
 ├── requirements.txt          # Dependencies
