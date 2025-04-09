@@ -1,0 +1,41 @@
+[
+  {
+    "company_name": "AI Innovate",
+    "description": "AI Innovate is developing advanced machine learning models for predictive analytics in healthcare, focusing on early disease detection through non-invasive methods.",
+    "website": "https://ai-innovate.com",
+    "location": "Boston, MA, USA",
+    "funding_date": "2023-04-05",
+    "funding_amount": 5000000,
+    "funding_currency": "USD",
+    "funding_round": "Series A",
+    "categories": ["Artificial Intelligence", "Healthcare", "Machine Learning"],
+    "company_size": "11-50",
+    "founded_year": "2021"
+  },
+  {
+    "company_name": "DevSecOps Pro",
+    "description": "DevSecOps Pro provides an integrated platform for automating security testing throughout the CI/CD pipeline, helping development teams ship secure code faster.",
+    "website": "https://devsecops.pro",
+    "location": "San Francisco, CA, USA",
+    "funding_date": "2023-04-03",
+    "funding_amount": 3500000,
+    "funding_currency": "USD",
+    "funding_round": "Seed",
+    "categories": ["DevOps", "Security", "Software Development"],
+    "company_size": "1-10",
+    "founded_year": "2022"
+  },
+  {
+    "company_name": "Green Logistics",
+    "description": "Green Logistics uses route optimization and electric vehicles to provide zero-emission last-mile delivery services for e-commerce businesses.",
+    "website": "https://greenlogistics.io",
+    "location": "Amsterdam, Netherlands",
+    "funding_date": "2023-04-01",
+    "funding_amount": 7250000,
+    "funding_currency": "EUR",
+    "funding_round": "Series B",
+    "categories": ["Logistics", "E-commerce", "Clean Energy"],
+    "company_size": "51-200",
+    "founded_year": "2020"
+  }
+] 

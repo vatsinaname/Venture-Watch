@@ -1,0 +1,38 @@
+# Startup AI Agent
+
+An AI-powered agent system that helps job seekers discover newly funded startups before they post job openings. This agent automatically collects data about startups that recently received funding, analyzes their tech stacks and potential hiring needs, and delivers personalized reports to your inbox.
+
+## Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/startup-agent.git
+cd startup-agent
+
+# Install dependencies
+pip install -r startup_agent/requirements.txt
+
+# Install the package (development mode)
+python install.py
+
+# Configure your API keys
+cp startup_agent/.env.example startup_agent/.env
+# Edit the .env file with your API keys
+
+# Run the agent
+startup-agent --run
+```
+
+## Project Architecture
+
+This multi-agent system uses LangChain and OpenAI's GPT models to:
+
+1. Collect startup funding data from Crunchbase API
+2. Analyze company details to extract tech stack and hiring needs
+3. Generate beautiful HTML reports delivered to your inbox
+
+For more details, see the [project documentation](startup_agent/README.md).
+
+## License
+
+MIT License 
