@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # Agent service that collects and processes startup data
+  agent:
+    build: .
+    image: venture-watch:latest
+    container_name: venture-watch-agent
+    command: python run.py
+    volumes:
+      - data-volume:/app/startup_agent/data
+      - ./.env:/app/startup_agent/.env:ro
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - venture-network
+
+  # Dashboard service
+  dashboard:
+    build: .
+    image: venture-watch:latest
+    container_name: venture-watch-dashboard
+    command: python -m startup_agent.run_dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - data-volume:/app/startup_agent/data
+      - ./.env:/app/startup_agent/.env:ro
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - venture-network
+    depends_on:
+      - agent
+
+  # Scheduled service that runs the agent on a schedule
+  scheduler:
+    build: .
+    image: venture-watch:latest
+    container_name: venture-watch-scheduler
+    command: python -m startup_agent.main --schedule
+    volumes:
+      - data-volume:/app/startup_agent/data
+      - ./.env:/app/startup_agent/.env:ro
+    restart: unless-stopped
+    env_file:
+      - .env
+    networks:
+      - venture-network
+
+volumes:
+  data-volume:
+    name: venture-watch-data
+
+networks:
+  venture-network:
+    name: venture-network 

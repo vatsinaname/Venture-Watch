@@ -1,180 +1,225 @@
 import os
 import json
+import logging
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import List, Dict, Any
+from datetime import datetime
 
-from langchain.llms import OpenAI
-from langchain.chat_models import ChatOpenAI
 from langchain.prompts import PromptTemplate
 from langchain.chains import LLMChain
+from langchain.output_parsers import PydanticOutputParser
+from pydantic import BaseModel, Field
 
-from startup_agent.config import OPENAI_API_KEY, DATA_DIR
+# Import necessary modules based on configuration
+from startup_agent.config import (
+    DATA_DIR, 
+    LLM_PROVIDER, 
+    OPENAI_API_KEY, 
+    GROQ_API_KEY, 
+    GROQ_MODEL,
+    DEFAULT_LLM_MODEL
+)
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+class StartupAnalysis(BaseModel):
+    """Schema for startup analysis output"""
+    company_name: str = Field(description="Name of the startup")
+    tech_stack: List[str] = Field(description="Technologies likely used by the startup")
+    hiring_needs: List[str] = Field(description="Potential roles the startup is hiring for")
+    product_focus: str = Field(description="Description of the startup's main product or service")
+    fit_score: int = Field(description="A score from 0-100 indicating match with user profile")
+    growth_potential: str = Field(description="Assessment of the startup's growth potential")
 
 class CompanyResearcher:
     """
-    Agent 2: Company Researcher
-    Analyzes startup data using LLMs to extract insights about
-    tech stack, product roadmap, and culture
+    Agent responsible for researching companies and providing insights
+    about their tech stack, hiring needs, and fit for the user's profile.
     """
     
     def __init__(self):
-        self.api_key = OPENAI_API_KEY
-        self.llm = ChatOpenAI(
-            temperature=0.2,
-            model_name="gpt-3.5-turbo",
-            openai_api_key=self.api_key
-        )
+        """Initialize the CompanyResearcher"""
+        self.data_dir = DATA_DIR
+        self.input_file = self.data_dir / "funding_data.json"
+        self.output_file = self.data_dir / "analysis_data.json"
+        
+        # Get the appropriate LLM based on configuration
+        self.llm = self._get_llm()
+        logger.info(f"CompanyResearcher initialized with {LLM_PROVIDER} LLM")
     
-    def analyze_company(self, company_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_llm(self):
         """
-        Analyze a single company's data to extract tech stack and other insights
+        Get the appropriate LLM based on configuration.
+        
+        Returns:
+            LLM: The configured language model
+        """
+        if LLM_PROVIDER == "groq":
+            from langchain_groq import ChatGroq
+            return ChatGroq(
+                groq_api_key=GROQ_API_KEY,
+                model_name=GROQ_MODEL
+            )
+        else:
+            from langchain_openai import ChatOpenAI
+            return ChatOpenAI(
+                openai_api_key=OPENAI_API_KEY,
+                model=DEFAULT_LLM_MODEL
+            )
+    
+    def _load_startup_data(self):
+        """
+        Load startup data from the input file.
+        
+        Returns:
+            list: List of startup data dictionaries
+        """
+        if not os.path.exists(self.input_file):
+            logger.warning(f"Input file not found: {self.input_file}")
+            return []
+        
+        try:
+            with open(self.input_file, 'r') as f:
+                data = json.load(f)
+            logger.info(f"Loaded {len(data)} startups from {self.input_file}")
+            return data
+        except Exception as e:
+            logger.error(f"Error loading startup data: {str(e)}")
+            return []
+    
+    def _save_analysis(self, analysis_data):
+        """
+        Save analysis data to the output file.
         
         Args:
-            company_data: Dictionary containing company information
+            analysis_data (list): List of analysis data dictionaries
+        """
+        try:
+            with open(self.output_file, 'w') as f:
+                json.dump(analysis_data, f, indent=2)
+            logger.info(f"Saved analysis for {len(analysis_data)} startups to {self.output_file}")
+        except Exception as e:
+            logger.error(f"Error saving analysis data: {str(e)}")
+    
+    def _analyze_startup(self, startup_data):
+        """
+        Analyze a single startup using the LLM.
+        
+        Args:
+            startup_data (dict): Startup data dictionary
             
         Returns:
-            Dictionary with additional analysis
+            dict: Analysis of the startup
         """
-        if not self.api_key:
-            print("Error: OPENAI_API_KEY is not set in the environment variables")
-            return company_data
-            
-        # Create a prompt for the LLM
-        prompt_template = PromptTemplate(
-            input_variables=["company_name", "description", "categories"],
-            template="""
-            You are an expert technology analyst who specializes in identifying the technology stack
-            and potential hiring needs of startups based on their description and industry.
-            
-            Company: {company_name}
-            Description: {description}
-            Categories: {categories}
-            
-            Based solely on this information, please provide:
-            1. The likely technology stack this company uses (programming languages, frameworks, databases, cloud services)
-            2. Potential technical roles they might be hiring for
-            3. The company's main product focus
-            
-            Format your response as a JSON with these keys: "tech_stack" (list), "hiring_needs" (list), "product_focus" (string)
-            """
+        # Extract relevant information for analysis
+        company_name = startup_data.get("company_name", "Unknown")
+        description = startup_data.get("description", "")
+        industry = startup_data.get("industry", "")
+        funding_round = startup_data.get("funding_round", "")
+        funding_amount = startup_data.get("funding_amount", 0)
+        
+        logger.info(f"Analyzing startup: {company_name}")
+        
+        # Set up the output parser
+        parser = PydanticOutputParser(pydantic_object=StartupAnalysis)
+        
+        # Create the prompt template
+        template = """
+        You are an expert startup analyst with deep knowledge of technology stacks 
+        and hiring patterns. Analyze this startup based on the information provided:
+        
+        Company: {company_name}
+        Description: {description}
+        Industry: {industry}
+        Funding Round: {funding_round}
+        Funding Amount: ${funding_amount} million
+        
+        Based on this information:
+        1. Determine the likely tech stack they're using
+        2. Predict roles they might be hiring for
+        3. Summarize their main product focus
+        4. Assess their growth potential (High/Medium/Low)
+        5. Assign a fit score (0-100) for this startup based on a generic software engineer profile
+        
+        {format_instructions}
+        """
+        
+        prompt = PromptTemplate(
+            template=template,
+            input_variables=["company_name", "description", "industry", "funding_round", "funding_amount"],
+            partial_variables={"format_instructions": parser.get_format_instructions()}
         )
         
-        chain = LLMChain(llm=self.llm, prompt=prompt_template)
+        # Create the LLM chain
+        chain = LLMChain(llm=self.llm, prompt=prompt)
         
-        # Prepare input for the LLM
-        categories_str = ", ".join(company_data.get("categories", []))
-        
-        # Run the LLM
         try:
-            result = chain.run({
-                "company_name": company_data.get("company_name", ""),
-                "description": company_data.get("description", ""),
-                "categories": categories_str
+            # Run the chain
+            result = chain.run(
+                company_name=company_name,
+                description=description,
+                industry=industry,
+                funding_round=funding_round,
+                funding_amount=funding_amount
+            )
+            
+            # Parse the result
+            parsed_result = parser.parse(result)
+            
+            # Convert to dictionary
+            analysis = parsed_result.dict()
+            
+            # Add original data
+            analysis.update({
+                "original_data": startup_data,
+                "analysis_date": datetime.now().strftime("%Y-%m-%d")
             })
             
-            # Parse the JSON result
-            try:
-                analysis = json.loads(result)
-                # Add the analysis to the company data
-                company_data.update({
-                    "tech_stack": analysis.get("tech_stack", []),
-                    "hiring_needs": analysis.get("hiring_needs", []),
-                    "product_focus": analysis.get("product_focus", "")
-                })
-            except json.JSONDecodeError:
-                print(f"Error parsing LLM response as JSON for {company_data.get('company_name')}")
-                # Try to extract information in a more forgiving way
-                company_data.update(self._extract_from_text(result))
-                
-        except Exception as e:
-            print(f"Error running LLM analysis: {e}")
+            return analysis
             
-        return company_data
+        except Exception as e:
+            logger.error(f"Error analyzing startup {company_name}: {str(e)}")
+            # Return basic info to avoid breaking the pipeline
+            return {
+                "company_name": company_name,
+                "tech_stack": [],
+                "hiring_needs": [],
+                "product_focus": "Unable to analyze",
+                "fit_score": 0,
+                "growth_potential": "Unknown",
+                "original_data": startup_data,
+                "analysis_date": datetime.now().strftime("%Y-%m-%d")
+            }
     
-    def _extract_from_text(self, text: str) -> Dict[str, Any]:
-        """Extract information from text when JSON parsing fails"""
-        analysis = {
-            "tech_stack": [],
-            "hiring_needs": [],
-            "product_focus": ""
-        }
-        
-        # Simple extraction based on section headers
-        lines = text.split("\n")
-        current_section = None
-        
-        for line in lines:
-            line = line.strip()
-            if "tech stack" in line.lower() or "technology stack" in line.lower():
-                current_section = "tech_stack"
-                continue
-            elif "hiring" in line.lower() or "roles" in line.lower():
-                current_section = "hiring_needs"
-                continue
-            elif "product" in line.lower() or "focus" in line.lower():
-                current_section = "product_focus"
-                continue
-                
-            if current_section == "tech_stack" and line and ":" not in line:
-                # Split by commas or other separators and clean up
-                techs = [t.strip() for t in line.split(",")]
-                analysis["tech_stack"].extend([t for t in techs if t])
-            elif current_section == "hiring_needs" and line and ":" not in line:
-                roles = [r.strip() for r in line.split(",")]
-                analysis["hiring_needs"].extend([r for r in roles if r])
-            elif current_section == "product_focus" and line and ":" not in line:
-                if analysis["product_focus"]:
-                    analysis["product_focus"] += " " + line
-                else:
-                    analysis["product_focus"] = line
-                    
-        return analysis
-    
-    def analyze_recent_startups(self) -> List[Dict[str, Any]]:
+    def run(self):
         """
-        Analyze the most recent startup data file
+        Run the analysis on all startups.
         
         Returns:
-            List of startups with analysis data
+            list: List of analyzed startups
         """
-        # Find the most recent data file
-        data_files = list(DATA_DIR.glob("funding_data_*.json"))
-        if not data_files:
-            print("No funding data files found")
+        # Load startup data
+        startup_data = self._load_startup_data()
+        
+        if not startup_data:
+            logger.warning("No startup data found for analysis")
             return []
-            
-        # Sort by modification time (most recent first)
-        most_recent_file = max(data_files, key=os.path.getmtime)
         
-        print(f"Analyzing startups from {most_recent_file}...")
+        # Analyze each startup
+        analysis_results = []
+        for startup in startup_data:
+            analysis = self._analyze_startup(startup)
+            analysis_results.append(analysis)
         
-        # Load the data
-        try:
-            with open(most_recent_file, 'r', encoding='utf-8') as f:
-                startup_data = json.load(f)
-        except Exception as e:
-            print(f"Error loading startup data: {e}")
-            return []
-            
-        # Analyze each company
-        analyzed_startups = []
-        for company in startup_data:
-            print(f"Analyzing {company.get('company_name', 'Unknown')}...")
-            analyzed_company = self.analyze_company(company)
-            analyzed_startups.append(analyzed_company)
-            
-        # Save the analyzed data
-        output_filename = most_recent_file.stem + "_analyzed.json"
-        output_path = DATA_DIR / output_filename
+        # Save the analysis
+        self._save_analysis(analysis_results)
         
-        with open(output_path, 'w', encoding='utf-8') as f:
-            json.dump(analyzed_startups, f, indent=2)
-            
-        print(f"Saved {len(analyzed_startups)} analyzed startup records to {output_path}")
-        return analyzed_startups
-
+        return analysis_results
 
 if __name__ == "__main__":
-    # Test the agent
+    # Run standalone for testing
     researcher = CompanyResearcher()
-    researcher.analyze_recent_startups() 
+    results = researcher.run()
+    print(f"Analyzed {len(results)} startups") 

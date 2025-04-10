@@ -1,15 +1,21 @@
 requests==2.31.0
 python-dotenv==1.0.0
-langchain==0.0.292
+langchain==0.0.325
 langchain-openai==0.0.2
+langchain-groq==0.0.6
 pydantic==2.4.2
 fastapi==0.104.1
 uvicorn==0.23.2
 jinja2==3.1.2
-crunchbase-python==0.8.0
+# crunchbase-python==0.8.0  # Removed as not available
 tenacity==8.2.3
 python-dateutil==2.8.2
 schedule==1.2.0
-reportlab==4.0.4
-streamlit==1.27.2
-markdown==3.4.4 
+reportlab==4.0.7
+streamlit==1.29.0
+markdown==3.4.4
+plotly==5.18.0
+pandas==2.1.0
+google-api-python-client==2.108.0
+gnews==0.3.5
+beautifulsoup4==4.12.2 

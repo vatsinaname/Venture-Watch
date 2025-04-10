@@ -1,10 +1,16 @@
 import os
 import json
+import logging
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import datetime
+import re
 
 from startup_agent.config import DATA_DIR
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 def get_latest_data_file(prefix: str = "funding_data_", suffix: str = ".json") -> Optional[Path]:
     """
@@ -106,4 +112,147 @@ def get_date_range(days_back: int) -> tuple:
     return (
         start_date.strftime("%Y-%m-%d"),
         end_date.strftime("%Y-%m-%d")
-    ) 
+    )
+
+def load_json_file(filepath):
+    """
+    Load data from a JSON file.
+    
+    Args:
+        filepath (str or Path): Path to the JSON file
+        
+    Returns:
+        dict or list: The loaded JSON data, or an empty list if the file doesn't exist
+    """
+    filepath = Path(filepath)
+    if not filepath.exists():
+        logger.warning(f"File not found: {filepath}")
+        return []
+    
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        logger.info(f"Loaded data from {filepath}")
+        return data
+    except Exception as e:
+        logger.error(f"Error loading JSON from {filepath}: {str(e)}")
+        return []
+
+def save_json_file(data, filepath):
+    """
+    Save data to a JSON file.
+    
+    Args:
+        data (dict or list): The data to save
+        filepath (str or Path): Path to the JSON file
+    """
+    filepath = Path(filepath)
+    
+    # Ensure the directory exists
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
+        logger.info(f"Saved data to {filepath}")
+    except Exception as e:
+        logger.error(f"Error saving JSON to {filepath}: {str(e)}")
+
+def extract_funding_amount(text):
+    """
+    Extract a funding amount from text.
+    
+    Args:
+        text (str): Text to search for funding amount
+        
+    Returns:
+        float or None: The funding amount in millions, or None if not found
+    """
+    if not text:
+        return None
+    
+    # Pattern: $X million or $X.Y million
+    pattern = r'\$\s*(\d+(?:\.\d+)?)\s*(million|M|billion|B)'
+    match = re.search(pattern, text, re.IGNORECASE)
+    
+    if match:
+        amount = float(match.group(1))
+        unit = match.group(2).lower()
+        
+        # Convert to millions
+        if unit in ('billion', 'b'):
+            amount *= 1000
+        
+        return amount
+    
+    return None
+
+def extract_funding_round(text):
+    """
+    Extract the funding round from text.
+    
+    Args:
+        text (str): Text to search for funding round
+        
+    Returns:
+        str or None: The funding round, or None if not found
+    """
+    if not text:
+        return None
+    
+    round_patterns = {
+        "Seed": r'\bseed\b',
+        "Series A": r'\bseries\s*a\b',
+        "Series B": r'\bseries\s*b\b',
+        "Series C": r'\bseries\s*c\b',
+        "Series D": r'\bseries\s*d\b',
+        "Series E": r'\bseries\s*e\b'
+    }
+    
+    for round_name, pattern in round_patterns.items():
+        if re.search(pattern, text, re.IGNORECASE):
+            return round_name
+    
+    return None
+
+def format_date(date_str, input_format="%Y-%m-%d", output_format="%B %d, %Y"):
+    """
+    Format a date string.
+    
+    Args:
+        date_str (str): Date string to format
+        input_format (str): Format of the input date string
+        output_format (str): Desired output format
+        
+    Returns:
+        str: Formatted date string, or the original string if formatting fails
+    """
+    if not date_str:
+        return ""
+    
+    try:
+        date_obj = datetime.strptime(date_str, input_format)
+        return date_obj.strftime(output_format)
+    except Exception:
+        return date_str
+    
+def clean_text(text):
+    """
+    Clean text by removing extra whitespace and normalizing line breaks.
+    
+    Args:
+        text (str): Text to clean
+        
+    Returns:
+        str: Cleaned text
+    """
+    if not text:
+        return ""
+    
+    # Replace multiple spaces with a single space
+    text = re.sub(r'\s+', ' ', text)
+    
+    # Replace multiple newlines with a single newline
+    text = re.sub(r'\n+', '\n', text)
+    
+    return text.strip() 

@@ -2,7 +2,33 @@
 
 An AI-powered agent system that helps job seekers discover newly funded startups before they post job openings. This agent automatically collects data about startups that recently received funding, analyzes their tech stacks and potential hiring needs, and delivers personalized reports to your inbox.
 
-## Quick Start
+## Quick Start (Docker)
+
+The easiest way to run Venture Watch is using Docker:
+
+```bash
+# Clone the repository
+git clone https://github.com/vatsinaname/Venture-Watch.git
+cd Venture-Watch
+
+# Copy and edit the environment file with your API keys
+cp startup_agent/.env.example .env
+# Edit .env with your API keys
+
+# Run using the helper script
+# Linux/Mac:
+chmod +x docker-start.sh
+./docker-start.sh
+
+# Windows (PowerShell):
+.\docker-start.ps1
+```
+
+The dashboard will be available at http://localhost:8501
+
+## Manual Installation
+
+If you prefer not to use Docker:
 
 ```bash
 # Clone the repository
@@ -37,6 +63,16 @@ The dashboard provides:
 - Detailed company profiles with filtering capabilities
 - Export options to PDF and CSV formats
 - Interactive data exploration
+
+## Docker Services
+
+The Docker setup includes three services:
+
+1. **Agent** - Collects and processes startup data
+2. **Dashboard** - Provides a web interface for exploring data
+3. **Scheduler** - Runs the data collection on a defined schedule
+
+All services share a common data volume, so data collected by one service is available to the others.
 
 ## Report Formats
 

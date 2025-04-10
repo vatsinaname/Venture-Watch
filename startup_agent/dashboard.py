@@ -14,8 +14,9 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional, Tuple
 
 from startup_agent.config import DATA_DIR
-from startup_agent.utils.helpers import get_latest_data_file, load_json_data
+from startup_agent.utils.helpers import get_latest_data_file, load_json_data, load_json_file
 from startup_agent.utils.pdf_generator import PDFReportGenerator
+from startup_agent.agents.startup_collector import StartupCollector
 
 # Page configuration
 st.set_page_config(
@@ -196,6 +197,29 @@ def create_company_card(company: Dict[str, Any]):
         
         st.markdown('</div>', unsafe_allow_html=True)
 
+def generate_sample_data():
+    """Generate sample data for demonstration purposes."""
+    collector = StartupCollector()
+    return collector._generate_sample_data()
+
+def format_currency(amount):
+    """Format the amount as a currency string."""
+    if amount is None:
+        return "Unknown"
+    
+    # Convert to float if it's a string
+    if isinstance(amount, str):
+        try:
+            amount = float(amount.replace("$", "").replace(",", ""))
+        except:
+            return amount
+    
+    # Format as currency
+    if amount >= 1000:
+        return f"${amount/1000:.1f}B"
+    else:
+        return f"${amount:.1f}M"
+
 def main():
     # Header
     st.markdown('<div class="main-header">🚀 Venture Watch Dashboard</div>', unsafe_allow_html=True)
@@ -213,65 +237,56 @@ def main():
     
     st.sidebar.caption(f"Data source: {data_source}")
     
-    # Extract unique values for filters
-    all_categories = set()
-    all_tech = set()
-    all_roles = set()
-    all_funding_rounds = set()
-    all_locations = set()
+    # Convert to DataFrame for easier filtering and visualization
+    df = pd.DataFrame(data)
     
-    for company in data:
-        all_categories.update(company.get("categories", []))
-        all_tech.update(company.get("tech_stack", []))
-        all_roles.update(company.get("hiring_needs", []))
-        if company.get("funding_round"):
-            all_funding_rounds.add(company.get("funding_round"))
-        if company.get("location"):
-            all_locations.add(company.get("location"))
+    # Ensure all required columns exist
+    required_columns = ["company_name", "funding_amount", "funding_round", "industry", "location"]
+    for col in required_columns:
+        if col not in df.columns:
+            df[col] = "Unknown"
     
-    # Create filters
-    selected_categories = st.sidebar.multiselect(
-        "Categories", sorted(list(all_categories)), default=[]
-    )
+    # Clean up funding_amount if needed
+    if "funding_amount" in df.columns:
+        # Convert to float if possible
+        df["funding_amount"] = pd.to_numeric(df["funding_amount"], errors="coerce")
+        # Replace NaN with 0
+        df["funding_amount"].fillna(0, inplace=True)
     
-    selected_tech = st.sidebar.multiselect(
-        "Tech Stack", sorted(list(all_tech)), default=[]
-    )
+    # Industry filter
+    industries = ["All"] + sorted(df["industry"].dropna().unique().tolist())
+    selected_industry = st.sidebar.selectbox("Industry", industries)
     
-    selected_roles = st.sidebar.multiselect(
-        "Hiring Needs", sorted(list(all_roles)), default=[]
-    )
+    # Funding round filter
+    rounds = ["All"] + sorted(df["funding_round"].dropna().unique().tolist())
+    selected_round = st.sidebar.selectbox("Funding Round", rounds)
     
-    selected_funding = st.sidebar.multiselect(
-        "Funding Rounds", sorted(list(all_funding_rounds)), default=[]
-    )
+    # Location filter
+    locations = ["All"] + sorted(df["location"].dropna().unique().tolist())
+    selected_location = st.sidebar.selectbox("Location", locations)
     
-    # Filter data
-    filtered_data = data
+    # Minimum funding filter
+    if "funding_amount" in df.columns:
+        min_funding = st.sidebar.slider(
+            "Minimum Funding ($ Million)", 
+            min_value=0.0, 
+            max_value=float(df["funding_amount"].max()) + 5.0, 
+            value=0.0,
+            step=1.0
+        )
+    else:
+        min_funding = 0.0
     
-    if selected_categories:
-        filtered_data = [
-            company for company in filtered_data
-            if any(cat in selected_categories for cat in company.get("categories", []))
-        ]
-    
-    if selected_tech:
-        filtered_data = [
-            company for company in filtered_data
-            if any(tech in selected_tech for tech in company.get("tech_stack", []))
-        ]
-    
-    if selected_roles:
-        filtered_data = [
-            company for company in filtered_data
-            if any(role in selected_roles for role in company.get("hiring_needs", []))
-        ]
-    
-    if selected_funding:
-        filtered_data = [
-            company for company in filtered_data
-            if company.get("funding_round") in selected_funding
-        ]
+    # Apply filters
+    filtered_df = df.copy()
+    if selected_industry != "All":
+        filtered_df = filtered_df[filtered_df["industry"] == selected_industry]
+    if selected_round != "All":
+        filtered_df = filtered_df[filtered_df["funding_round"] == selected_round]
+    if selected_location != "All":
+        filtered_df = filtered_df[filtered_df["location"] == selected_location]
+    if "funding_amount" in filtered_df.columns:
+        filtered_df = filtered_df[filtered_df["funding_amount"] >= min_funding]
     
     # Dashboard sections
     tabs = st.tabs(["Overview", "Companies", "Analytics", "Export Options"])
@@ -283,19 +298,22 @@ def main():
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.metric("Total Startups", len(filtered_data))
+            st.metric("Total Startups", len(filtered_df))
         
         with col2:
-            total_funding = sum(company.get("funding_amount", 0) for company in filtered_data if company.get("funding_currency") == "USD")
-            st.metric("Total Funding (USD)", f"${total_funding:,.0f}")
+            total_funding = filtered_df["funding_amount"].sum()
+            st.metric("Total Funding", format_currency(total_funding))
         
         with col3:
-            avg_funding = total_funding / len(filtered_data) if filtered_data else 0
-            st.metric("Avg. Funding (USD)", f"${avg_funding:,.0f}")
+            avg_funding = total_funding / len(filtered_df) if filtered_df.size > 0 else 0
+            st.metric("Avg. Funding", format_currency(avg_funding))
         
         with col4:
-            most_common_round = max(all_funding_rounds, key=lambda x: sum(1 for company in filtered_data if company.get("funding_round") == x)) if all_funding_rounds else "N/A"
-            st.metric("Most Common Round", most_common_round)
+            if "industry" in filtered_df.columns:
+                top_industry = filtered_df["industry"].value_counts().idxmax() if not filtered_df.empty else "None"
+                st.metric("Top Industry", top_industry)
+            else:
+                st.metric("Top Industry", "Unknown")
         
         # Top categories and tech
         st.markdown("## 🏷️ Top Categories and Technologies")
@@ -304,7 +322,7 @@ def main():
         with col1:
             # Count category occurrences
             category_counts = {}
-            for company in filtered_data:
+            for company in filtered_df:
                 for category in company.get("categories", []):
                     category_counts[category] = category_counts.get(category, 0) + 1
             
@@ -324,7 +342,7 @@ def main():
         with col2:
             # Count tech stack occurrences
             tech_counts = {}
-            for company in filtered_data:
+            for company in filtered_df:
                 for tech in company.get("tech_stack", []):
                     tech_counts[tech] = tech_counts.get(tech, 0) + 1
             
@@ -344,13 +362,13 @@ def main():
     # Companies tab
     with tabs[1]:
         st.markdown("## 🏢 Startup Companies")
-        st.markdown(f"Showing {len(filtered_data)} startups")
+        st.markdown(f"Showing {len(filtered_df)} startups")
         
-        if not filtered_data:
-            st.info("No companies match your filters. Try adjusting your criteria.")
-        else:
-            for company in filtered_data:
+        if not filtered_df.empty:
+            for company in filtered_df:
                 create_company_card(company)
+        else:
+            st.info("No companies match your filters. Try adjusting your criteria.")
     
     # Analytics tab
     with tabs[2]:
@@ -359,7 +377,7 @@ def main():
         # Funding rounds distribution
         st.markdown("### Funding Rounds Distribution")
         funding_counts = {}
-        for company in filtered_data:
+        for company in filtered_df:
             round_type = company.get("funding_round", "Unknown")
             funding_counts[round_type] = funding_counts.get(round_type, 0) + 1
         
@@ -379,7 +397,7 @@ def main():
         # Hiring needs analysis
         st.markdown("### Hiring Needs Analysis")
         role_counts = {}
-        for company in filtered_data:
+        for company in filtered_df:
             for role in company.get("hiring_needs", []):
                 role_counts[role] = role_counts.get(role, 0) + 1
         
@@ -409,7 +427,7 @@ def main():
             if st.button("Generate PDF Report"):
                 with st.spinner("Generating PDF report..."):
                     generator = PDFReportGenerator()
-                    pdf_path = generator.generate_pdf_report(filtered_data)
+                    pdf_path = generator.generate_pdf_report(filtered_df)
                     st.success(f"PDF report generated: {pdf_path}")
                     
                     # Create a download button
@@ -428,7 +446,7 @@ def main():
             if st.button("Generate CSV"):
                 # Convert the data to a DataFrame
                 rows = []
-                for company in filtered_data:
+                for company in filtered_df:
                     row = {
                         "Company Name": company.get("company_name", ""),
                         "Description": company.get("description", ""),
@@ -441,7 +459,9 @@ def main():
                         "Categories": ", ".join(company.get("categories", [])),
                         "Tech Stack": ", ".join(company.get("tech_stack", [])),
                         "Hiring Needs": ", ".join(company.get("hiring_needs", [])),
-                        "Product Focus": company.get("product_focus", "")
+                        "Product Focus": company.get("product_focus", ""),
+                        "Industry": company.get("industry", "Unknown"),
+                        "Source": company.get("source", "Unknown")
                     }
                     rows.append(row)
                 

@@ -1,17 +1,17 @@
 from setuptools import setup, find_packages
 
-with open("startup_agent/README.md", "r", encoding="utf-8") as fh:
+with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
     name="startup-agent",
     version="0.1.0",
-    author="Your Name",
+    author="Rishabh Vats",
     author_email="your.email@example.com",
     description="AI agent that finds funded startups matching your skills",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/yourusername/startup-agent",
+    url="https://github.com/vatsinaname/Venture-Watch",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -28,10 +28,14 @@ setup(
         "fastapi>=0.104.1",
         "uvicorn>=0.23.2",
         "jinja2>=3.1.2",
-        "crunchbase-python>=0.8.0",
         "tenacity>=8.2.3",
         "python-dateutil>=2.8.2",
         "schedule>=1.2.0",
+        "reportlab>=4.0.4",
+        "streamlit>=1.27.2",
+        "markdown>=3.4.4",
+        "plotly>=5.18.0",
+        "pandas>=2.0.0",
     ],
     entry_points={
         "console_scripts": [

@@ -21,13 +21,13 @@ def main():
     
     print(f"Starting Streamlit dashboard from {dashboard_path}")
     
-    # Run Streamlit
+    # Run Streamlit - using shell=True for Windows compatibility
     try:
         subprocess.run([
             "streamlit", "run", str(dashboard_path), 
             "--server.port=8501", 
             "--server.address=localhost"
-        ], check=True)
+        ], check=True, shell=True)
     except subprocess.CalledProcessError as e:
         print(f"Error running Streamlit: {e}")
         sys.exit(1)

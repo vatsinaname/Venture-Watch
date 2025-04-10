@@ -1,0 +1,106 @@
+Metadata-Version: 2.4
+Name: startup-agent
+Version: 0.1.0
+Summary: AI agent that finds funded startups matching your skills
+Home-page: https://github.com/vatsinaname/Venture-Watch
+Author: Rishabh Vats
+Author-email: vatsrishabh@icloud.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: requests>=2.31.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: langchain>=0.0.292
+Requires-Dist: langchain-openai>=0.0.2
+Requires-Dist: pydantic>=2.4.2
+Requires-Dist: fastapi>=0.104.1
+Requires-Dist: uvicorn>=0.23.2
+Requires-Dist: jinja2>=3.1.2
+Requires-Dist: tenacity>=8.2.3
+Requires-Dist: python-dateutil>=2.8.2
+Requires-Dist: schedule>=1.2.0
+Requires-Dist: reportlab>=4.0.4
+Requires-Dist: streamlit>=1.27.2
+Requires-Dist: markdown>=3.4.4
+Requires-Dist: plotly>=5.18.0
+Requires-Dist: pandas>=2.0.0
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# Venture-Watch
+
+AI agent that identifies recently funded startups and aligns them with your skills.
+
+## Overview
+
+Venture-Watch is an intelligent agent system that 
+helps job seekers discover promising startup opportunities 
+before they're widely advertised. It collects data on 
+recently funded startups, analyzes their technology stacks 
+and needs, and matches them with your skills and experience.
+
+## Features
+
+- **Startup Collection**: Gathers data on recently funded startups from Crunchbase and other sources
+- **Company Research**: Uses LLMs to analyze startup products, tech stacks, and hiring needs
+- **Skill Matching**: Compares your skillset with startup needs for targeted matching
+- **Interactive Dashboard**: Visualize and filter startup opportunities
+- **Customizable Reports**: Generate PDF reports of matched startups
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/vatsinaname/Venture-Watch.git
+cd Venture-Watch
+
+# Install dependencies
+pip install -e .
+
+# Set up environment variables
+cp startup_agent/.env.example startup_agent/.env
+# Edit .env with your API keys
+```
+
+## Usage
+
+### Start the Dashboard
+
+```bash
+# Run the Streamlit dashboard
+streamlit run simple_dashboard.py
+```
+
+### Run the Data Collection Agent
+
+```bash
+# Collect recent startup data
+python -m startup_agent.agents.startup_collector
+```
+
+## Docker Support
+
+The project includes Docker support for easy deployment:
+
+```bash
+# Start all services
+docker-compose up
+
+# Or just the dashboard
+docker-compose up dashboard
+```
+
+## License
+
+MIT License 

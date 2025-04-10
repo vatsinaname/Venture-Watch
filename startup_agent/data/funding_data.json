@@ -1,0 +1,77 @@
+[
+  {
+    "company_name": "AI Assistant Technologies",
+    "funding_amount": 15.5,
+    "funding_round": "Series A",
+    "industry": "AI",
+    "location": "San Francisco, CA",
+    "description": "AI-powered virtual assistants for business automation",
+    "url": "https://example.com/ai-assistant-funding",
+    "published_date": "2025-04-10",
+    "source": "TechCrunch",
+    "investors": [
+      "Andreessen Horowitz",
+      "Sequoia Capital"
+    ]
+  },
+  {
+    "company_name": "Quantum Cloud Systems",
+    "funding_amount": 8.2,
+    "funding_round": "Seed",
+    "industry": "Cloud",
+    "location": "Boston, MA",
+    "description": "Quantum computing infrastructure for cloud applications",
+    "url": "https://example.com/quantum-cloud-funding",
+    "published_date": "2025-04-08",
+    "source": "VentureBeat",
+    "investors": [
+      "Y Combinator",
+      "First Round Capital"
+    ]
+  },
+  {
+    "company_name": "HealthAI Labs",
+    "funding_amount": 22.0,
+    "funding_round": "Series B",
+    "industry": "Healthcare",
+    "location": "Austin, TX",
+    "description": "AI diagnostics platform for early disease detection",
+    "url": "https://example.com/healthai-funding",
+    "published_date": "2025-04-05",
+    "source": "Forbes",
+    "investors": [
+      "Khosla Ventures",
+      "GV"
+    ]
+  },
+  {
+    "company_name": "SecureChain",
+    "funding_amount": 12.8,
+    "funding_round": "Series A",
+    "industry": "Cybersecurity",
+    "location": "New York, NY",
+    "description": "Blockchain-based cybersecurity solutions for enterprises",
+    "url": "https://example.com/securechain-funding",
+    "published_date": "2025-04-07",
+    "source": "Business Insider",
+    "investors": [
+      "Accel",
+      "Lightspeed Venture Partners"
+    ]
+  },
+  {
+    "company_name": "EcoLogistics",
+    "funding_amount": 5.5,
+    "funding_round": "Seed",
+    "industry": "E-commerce",
+    "location": "Seattle, WA",
+    "description": "Sustainable last-mile delivery for e-commerce companies",
+    "url": "https://example.com/ecologistics-funding",
+    "published_date": "2025-04-09",
+    "source": "TechCrunch",
+    "investors": [
+      "Founders Fund",
+      "SV Angel"
+    ]
+  }
+]

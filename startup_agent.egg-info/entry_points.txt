@@ -1,0 +1,2 @@
+[console_scripts]
+startup-agent = startup_agent.run:main

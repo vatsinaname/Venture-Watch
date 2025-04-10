@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+
+# Docker
+.docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+.env
+.venv
+ENV/
+
+# VS Code
+.vscode/
+
+# Data (we'll mount this as a volume)
+startup_agent/data/*
+!startup_agent/data/example_*.json
+!startup_agent/data/example_*.html
+
+# Logs
+*.log
+startup_agent.log 

@@ -18,53 +18,54 @@ This multi-agent system consists of:
 - Multiple report formats (HTML, PDF, CSV)
 - Interactive dashboard for data exploration
 - Scheduling system to automate the entire pipeline
+- Docker containerization for easy deployment
 
 ## Setup Instructions
 
-### 1. Clone the repository
+### Option 1: Using Docker (Recommended)
+
+The easiest way to run the system is with Docker:
+
+```bash
+# From the root directory (Venture-Watch)
+cp startup_agent/.env.example .env
+# Edit .env with your API keys
+
+# Run everything
+docker-compose up -d
+```
+
+This will start three services:
+- Agent for data collection
+- Dashboard for data exploration (available at http://localhost:8501)
+- Scheduler for automated runs
+
+### Option 2: Manual Installation
 
 ```bash
 git clone https://github.com/vatsinaname/Venture-Watch.git
 cd Venture-Watch
-```
 
-### 2. Install dependencies
-
-```bash
+# Install dependencies
 pip install -r startup_agent/requirements.txt
-```
 
-### 3. Set up API keys
-
-Copy the example environment file and fill in your API keys:
-
-```bash
+# Configure your API keys
 cp startup_agent/.env.example startup_agent/.env
-```
+# Edit the .env file with your API keys
 
-Edit the `.env` file with your API keys and configuration:
-
-- **CRUNCHBASE_API_KEY**: Get from [Crunchbase](https://data.crunchbase.com/docs)
-- **OPENAI_API_KEY**: Get from [OpenAI](https://platform.openai.com/)
-- **GOOGLE_NEWS_API_KEY**: Get from [News API](https://newsapi.org/) (optional for future enhancements)
-- **Email settings**: Configure your email sending preferences
-
-### 4. Run the pipeline
-
-```bash
+# Run the pipeline
 python run.py
 ```
 
-This will:
-1. Collect startup funding data
-2. Analyze companies with AI
-3. Generate and send a report
-
-### 5. Launch the dashboard
+## Using the Dashboard
 
 To explore the data interactively:
 
 ```bash
+# With Docker:
+docker-compose up -d dashboard
+
+# Without Docker:
 python -m startup_agent.run_dashboard
 ```
 
@@ -74,11 +75,27 @@ This will start a Streamlit server at http://localhost:8501 where you can:
 - Generate custom PDF reports
 - Export data to CSV
 
-### 6. Schedule automatic runs
+## Data Collection
+
+To run the data collection pipeline:
+
+```bash
+# With Docker:
+docker-compose run --rm agent
+
+# Without Docker:
+python run.py
+```
+
+## Scheduling Data Collection
 
 To run the pipeline on a schedule:
 
 ```bash
+# With Docker:
+docker-compose up -d scheduler
+
+# Without Docker:
 python -m startup_agent.main --schedule
 ```
 
@@ -87,24 +104,12 @@ python -m startup_agent.main --schedule
 Run the tests with:
 
 ```bash
+# Without Docker:
 python -m startup_agent.tests.run_tests
+
+# With Docker:
+docker-compose run --rm agent python -m startup_agent.tests.run_tests
 ```
-
-Or run an individual test:
-
-```bash
-python -m unittest startup_agent.tests.test_startup_collector
-```
-
-## Extending the Project
-
-### Adding a Skill Matcher
-
-A future enhancement will include a Skill Matcher agent that compares your skills with startup needs.
-
-### Adding a Contribution Strategist
-
-Another planned agent will suggest specific ways you could contribute to each startup.
 
 ## Project Structure
 
@@ -127,6 +132,15 @@ startup_agent/
 ├── requirements.txt          # Dependencies
 └── .env.example              # Example environment variables
 ```
+
+## Docker Configuration
+
+The Docker setup includes:
+
+- **Dockerfile**: Builds the application image
+- **docker-compose.yml**: Defines three services (agent, dashboard, scheduler)
+- **docker-start.sh/ps1**: Helper scripts for common Docker operations
+- **Volume**: Shared data storage between services
 
 ## License
 
