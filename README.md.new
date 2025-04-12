@@ -1,8 +1,8 @@
-# Startup AI Agent
+Startup AI Agent
 
 An AI-powered agent system that helps job seekers discover newly funded startups before they post job openings. This agent automatically collects data about startups that recently received funding, analyzes their tech stacks and potential hiring needs, and delivers personalized reports to your inbox.
 
-## Quick Start (Docker)
+Quick Start (Docker)
 
 The easiest way to run Venture Watch is using Docker:
 
@@ -64,31 +64,31 @@ The dashboard provides:
 - Export options to PDF and CSV formats
 - Interactive data exploration
 
-## Docker Services
+Docker Services
 
 The Docker setup includes three services:
 
-1. **Agent** - Collects and processes startup data
-2. **Dashboard** - Provides a web interface for exploring data
-3. **Scheduler** - Runs the data collection on a defined schedule
+1 Agent - Collects and processes startup data
+2 Dashboard - Provides a web interface for exploring data
+3 Scheduler - Runs the data collection on a defined schedule
 
 All services share a common data volume, so data collected by one service is available to the others.
 
-## Report Formats
+Report Formats
 
 Venture Watch supports multiple report formats:
 
-1. **HTML Reports** - Beautiful, formatted emails with startup details
-2. **PDF Reports** - Professional PDF documents generated using ReportLab
-3. **CSV Export** - Tabular data for further analysis in spreadsheet software
+1 HTML Reports - Formatted emails with startup details.
+2 PDF Reports - Professional PDF documents generated using ReportLab.
+3 CSV Export - Tabular data for further analysis in spreadsheet software.
 
-## Project Architecture
+Project Architecture
 
 This multi-agent system uses LangChain and OpenAI's GPT models to:
 
-1. Collect startup funding data from Crunchbase API
-2. Analyze company details to extract tech stack and hiring needs
-3. Generate beautiful reports in multiple formats
+1 Collect startup funding data from various sources
+2 Analyze company details to extract tech stack and hiring needs
+3 Generate beautiful reports in multiple formats
 
 For more details, see the [project documentation](startup_agent/README.md).
 

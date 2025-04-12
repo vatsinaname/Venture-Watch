@@ -28,6 +28,12 @@ GROQ_MODEL = os.getenv("GROQ_MODEL", "deepseek-r1-distill-llama-70b")
 # Google News API settings
 GOOGLE_NEWS_DAYS_LOOKBACK = 7  # Number of days to look back for news
 
+# Web scraping settings
+WEB_SCRAPING_ENABLED = os.getenv("WEB_SCRAPING_ENABLED", "true").lower() == "true"
+WEB_SCRAPING_DAYS_LOOKBACK = int(os.getenv("WEB_SCRAPING_DAYS_LOOKBACK", "7"))
+WEB_SCRAPING_SOURCES = os.getenv("WEB_SCRAPING_SOURCES", "techcrunch,venturebeat,crunchbase").split(",")
+WEB_SCRAPING_REQUEST_DELAY = float(os.getenv("WEB_SCRAPING_REQUEST_DELAY", "2"))
+
 # User profile settings
 USER_SKILLS = os.getenv("USER_SKILLS", "").split(",")
 USER_EXPERIENCE = int(os.getenv("USER_EXPERIENCE", "0"))

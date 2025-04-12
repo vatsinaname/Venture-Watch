@@ -215,10 +215,10 @@ def format_currency(amount):
             return amount
     
     # Format as currency
-    if amount >= 1000:
-        return f"${amount/1000:.1f}B"
+    if amount >= 1000000000:
+        return f"${amount/1000000000:.1f}B"
     else:
-        return f"${amount:.1f}M"
+        return f"${amount/1000000:.1f}M"
 
 def main():
     # Header

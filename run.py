@@ -21,6 +21,21 @@ def run_collector():
     print(f"Collected {len(results)} startup funding entries")
     return results
 
+def update_database():
+    """Update the persistent startup database with new search results"""
+    print("Updating startup database with new search results...")
+    from startup_agent.agents.startup_collector import StartupCollector
+    collector = StartupCollector()
+    
+    # Run the collector to get new results
+    results = collector.run()
+    
+    # Update the database with the new results
+    updated_db = collector.update_startup_database(results)
+    
+    print(f"Database updated with {len(updated_db)} total startups ({len(results)} new entries)")
+    return updated_db
+
 def run_researcher():
     """Run the company researcher agent"""
     print("Running company researcher agent...")
@@ -56,8 +71,11 @@ def run_report_generator():
 def run_all():
     """Run the complete pipeline"""
     print("Running complete Venture-Watch pipeline...")
-    results = run_collector()
-    if results:
+    # Update the database with new search results
+    updated_db = update_database()
+    
+    if updated_db:
+        # Analyze the startups
         analyzed_data = run_researcher()
         if analyzed_data:
             report_path = run_report_generator()
@@ -73,6 +91,7 @@ def main():
     parser.add_argument("--analyze", action="store_true", help="Run the company researcher agent")
     parser.add_argument("--report", action="store_true", help="Generate reports")
     parser.add_argument("--dashboard", action="store_true", help="Start the dashboard")
+    parser.add_argument("--update-db", action="store_true", help="Update the startup database with new search results")
     parser.add_argument("--all", action="store_true", help="Run the complete pipeline")
     
     args = parser.parse_args()
@@ -88,6 +107,8 @@ def main():
     else:
         if args.collect:
             run_collector()
+        if args.update_db:
+            update_database()
         if args.analyze:
             run_researcher()
         if args.report:

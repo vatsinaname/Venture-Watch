@@ -9,6 +9,7 @@ Venture-Watch is an intelligent agent system that helps job seekers discover pro
 ## Features
 
 - **Startup Collection**: Gathers data on recently funded startups from Google News and Google Custom Search APIs
+- **Ninja Squirrel Gathering**: Deploys a team of data-collecting ninjas and squirrels for enhanced startup discovery
 - **Company Research**: Uses LLMs to analyze startup products, tech stacks, and hiring needs
 - **Skill Matching**: Compares your skillset with startup needs for targeted matching
 - **Interactive Dashboard**: Visualize and filter startup opportunities

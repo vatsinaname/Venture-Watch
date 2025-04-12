@@ -7,13 +7,15 @@ An AI-powered agent system that helps job seekers discover newly funded startups
 This multi-agent system consists of:
 
 1. **Startup Intelligence Collector**: Identifies funded startups using Crunchbase API
-2. **Company Researcher**: Uses LLMs to analyze startups' products, tech stack, and likely hiring needs
-3. **Report Generator**: Creates beautiful reports in multiple formats (HTML, PDF)
-4. **Interactive Dashboard**: Streamlit-based UI for exploring startup data
+2. **Ninja Squirrel Gathering Team**: Unleashes dancing ninjas and data squirrels to find additional startup funding news
+3. **Company Researcher**: Uses LLMs to analyze startups' products, tech stack, and likely hiring needs
+4. **Report Generator**: Creates beautiful reports in multiple formats (HTML, PDF)
+5. **Interactive Dashboard**: Streamlit-based UI for exploring startup data
 
 ## Features
 
 - Daily or weekly email reports with newly funded startups
+- Data Disco Dancing for enhanced startup discovery
 - AI-powered analysis of company tech stacks and potential roles
 - Multiple report formats (HTML, PDF, CSV)
 - Interactive dashboard for data exploration
@@ -117,8 +119,9 @@ docker-compose run --rm agent python -m startup_agent.tests.run_tests
 startup_agent/
 ├── agents/
 │   ├── startup_collector.py  # Agent 1: Collects funding data
-│   ├── company_researcher.py # Agent 2: LLM analysis of companies
-│   └── report_generator.py   # Agent 5: Creates reports
+│   ├── web_scrapers.py       # Agent 2: Ninja Squirrel Gathering Team
+│   ├── company_researcher.py # Agent 3: LLM analysis of companies
+│   └── report_generator.py   # Agent 4: Creates reports
 ├── data/                     # Storage for collected and processed data
 ├── utils/
 │   ├── helpers.py            # Utility functions

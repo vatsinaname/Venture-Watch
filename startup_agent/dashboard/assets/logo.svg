@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .logo-text { font: bold 30px Arial, sans-serif; fill: #fff; }
+    .logo-subtext { font: bold 14px Arial, sans-serif; fill: #fff; }
+    .rocket { fill: #fff; }
+    .circle { fill: #3498db; }
+  </style>
+  
+  <!-- Background Circle -->
+  <circle class="circle" cx="100" cy="100" r="95" />
+  
+  <!-- Rocket Icon -->
+  <path class="rocket" d="M100,40 C120,40 135,55 135,90 L135,110 L120,125 L120,95 C120,70 110,60 100,60 C90,60 80,70 80,95 L80,125 L65,110 L65,90 C65,55 80,40 100,40 Z" />
+  <rect class="rocket" x="80" y="125" width="40" height="20" rx="5" ry="5" />
+  <path class="rocket" d="M85,145 L85,160 L95,150 Z" />
+  <path class="rocket" d="M115,145 L115,160 L105,150 Z" />
+  
+  <!-- Text -->
+  <text class="logo-text" x="100" y="105" text-anchor="middle">VW</text>
+  <text class="logo-subtext" x="100" y="125" text-anchor="middle">VENTURE WATCH</text>
+</svg> 

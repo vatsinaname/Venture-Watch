@@ -1,0 +1,147 @@
+/* Main Dashboard Styles */
+body {
+    font-family: 'Open Sans', sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Header Styles */
+.header {
+    margin-bottom: 20px;
+}
+
+/* Metric Card Styles */
+.metric-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-5px);
+}
+
+.metric-card .card-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #3498db;
+}
+
+/* Chart Styles */
+.dash-graph {
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+}
+
+/* Filter Sidebar Styles */
+.sidebar-col {
+    background-color: white;
+    border-right: 1px solid #e9ecef;
+    padding: 15px;
+}
+
+.filter-section {
+    margin-bottom: 1.5rem;
+}
+
+.filter-heading {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+/* Dashboard Tabs */
+.nav-tabs .nav-link {
+    font-weight: 600;
+    color: #495057;
+}
+
+.nav-tabs .nav-link.active {
+    color: #3498db;
+    border-color: #dee2e6 #dee2e6 #fff;
+}
+
+/* Table Styles */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.table thead th {
+    background-color: #3498db;
+    color: white;
+    font-weight: 600;
+}
+
+/* Startup Card Styles */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: #3498db;
+    color: white;
+    font-weight: 600;
+    padding: 12px 16px;
+}
+
+.card-header .card-title {
+    margin-bottom: 0;
+    font-size: 1.3rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.card-body h5 {
+    font-size: 0.85rem;
+    margin-bottom: 0.25rem;
+}
+
+.card-body p {
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+.card-footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid rgba(0,0,0,0.125);
+    padding: 0.75rem 1.25rem;
+}
+
+.card-footer small {
+    color: #6c757d;
+}
+
+.card-footer .btn {
+    margin-right: 0.5rem;
+}
+
+/* Footer Styles */
+footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e9ecef;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .sidebar-col {
+        margin-bottom: 1.5rem;
+        border-right: none;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 1.5rem;
+    }
+} 

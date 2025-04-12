@@ -9,17 +9,25 @@ import gnews
 from bs4 import BeautifulSoup
 from googleapiclient.discovery import build
 
+# Import our dancing ninjas and squirrels
+from startup_agent.agents.web_scrapers import unleash_the_dancing_ninjas, extract_funding_info
+
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # Load configuration
-from startup_agent.config import DATA_DIR
+from startup_agent.config import (
+    DATA_DIR,
+    WEB_SCRAPING_ENABLED,
+    WEB_SCRAPING_DAYS_LOOKBACK,
+    DAYS_TO_LOOK_BACK
+)
 
 class StartupCollector:
     """
     Agent responsible for collecting startup funding data using Google News API
-    and Google Custom Search API.
+    and Google Custom Search API, with additional Ninja Squirrel Gathering capabilities.
     """
     
     def __init__(self):
@@ -29,11 +37,20 @@ class StartupCollector:
         self.google_cse_id = os.getenv("GOOGLE_CSE_ID")
         self.data_dir = DATA_DIR
         self.output_file = self.data_dir / "funding_data.json"
+        self.persistent_db_file = self.data_dir / "startup_database.json"
         
         # Ensure data directory exists
         self.data_dir.mkdir(parents=True, exist_ok=True)
         
+        # Configuration for Ninja Squirrel Gathering
+        self.use_ninja_squirrels = WEB_SCRAPING_ENABLED
+        self.ninja_days_lookback = WEB_SCRAPING_DAYS_LOOKBACK
+        
         logger.info(f"StartupCollector initialized. Data will be saved to {self.output_file}")
+        if self.use_ninja_squirrels:
+            logger.info(f"Ninja Squirrel Gathering is ENABLED. Looking back {self.ninja_days_lookback} days.")
+        else:
+            logger.info("Ninja Squirrel Gathering is DISABLED.")
     
     def collect_from_google_news(self, days=7):
         """
@@ -87,7 +104,8 @@ class StartupCollector:
                             "company_name": article_info.get("company_name"),
                             "industry": article_info.get("industry"),
                             "location": article_info.get("location"),
-                            "investors": article_info.get("investors", [])
+                            "investors": article_info.get("investors", []),
+                            "discovery_date": datetime.now().strftime("%Y-%m-%d")
                         }
                         all_results.append(news_item)
             
@@ -142,7 +160,8 @@ class StartupCollector:
                             "title": item.get("title", ""),
                             "url": item.get("link", ""),
                             "snippet": item.get("snippet", ""),
-                            "source": item.get("displayLink", "")
+                            "source": item.get("displayLink", ""),
+                            "discovery_date": datetime.now().strftime("%Y-%m-%d")
                         }
                         
                         # Extract additional information
@@ -298,36 +317,127 @@ class StartupCollector:
         
         return list(unique_entries.values())
     
+    def update_startup_database(self, new_results):
+        """
+        Update the persistent startup database with new results.
+        
+        Args:
+            new_results (list): New startup funding data to add to the database
+            
+        Returns:
+            list: Updated database of startup funding data
+        """
+        # Load existing database if it exists
+        existing_data = []
+        if os.path.exists(self.persistent_db_file):
+            try:
+                with open(self.persistent_db_file, 'r') as f:
+                    existing_data = json.load(f)
+                logger.info(f"Loaded {len(existing_data)} existing startups from database")
+            except Exception as e:
+                logger.error(f"Error loading existing database: {str(e)}")
+        
+        # Create a dictionary of existing entries for easy lookup
+        existing_entries = {}
+        for entry in existing_data:
+            company_name = entry.get("company_name")
+            url = entry.get("url")
+            
+            if company_name and url:
+                key = f"{company_name}_{url}"
+                existing_entries[key] = entry
+        
+        # Add new results to database, avoiding duplicates
+        added_count = 0
+        for result in new_results:
+            company_name = result.get("company_name")
+            url = result.get("url")
+            
+            if not company_name or not url:
+                continue
+                
+            key = f"{company_name}_{url}"
+            
+            # If entry doesn't exist or new entry has more information, update it
+            if key not in existing_entries or len(result.keys()) > len(existing_entries[key].keys()):
+                # Add a timestamp if not present
+                if "discovery_date" not in result:
+                    result["discovery_date"] = datetime.now().strftime("%Y-%m-%d")
+                
+                existing_entries[key] = result
+                added_count += 1
+        
+        # Convert back to list
+        updated_data = list(existing_entries.values())
+        
+        # Save the updated database
+        try:
+            with open(self.persistent_db_file, 'w') as f:
+                json.dump(updated_data, f, indent=2)
+            logger.info(f"Saved {len(updated_data)} startups to database (added {added_count} new entries)")
+        except Exception as e:
+            logger.error(f"Error saving database: {str(e)}")
+        
+        return updated_data
+    
+    def collect_from_ninja_squirrels(self, days=None):
+        """
+        Collect startup funding news using Ninja Squirrel Gathering techniques.
+        
+        Args:
+            days (int): Optional override for number of days to look back
+            
+        Returns:
+            list: List of startup funding news items
+        """
+        days = days or self.ninja_days_lookback
+        logger.info(f"Unleashing dancing ninjas and squirrels to gather data from past {days} days")
+        
+        if not self.use_ninja_squirrels:
+            logger.info("Ninja Squirrel Gathering is disabled. Skipping.")
+            return []
+        
+        try:
+            # Call our team of dancing ninjas and squirrels
+            results = unleash_the_dancing_ninjas(days)
+            logger.info(f"Ninja Squirrel team gathered {len(results)} startups")
+            return results
+        except Exception as e:
+            logger.error(f"Error in Ninja Squirrel Gathering: {str(e)}")
+            return []
+    
     def run(self):
         """
-        Run the startup collection process.
-        
-        Returns:
-            list: Collected and processed startup funding data
+        Run the startup collector to gather and combine results from multiple sources.
         """
-        logger.info("Starting startup data collection")
+        all_results = []
         
-        # Collect data from Google News
-        news_results = self.collect_from_google_news()
+        # Collect from Google News
+        news_results = self.collect_from_google_news(days=DAYS_TO_LOOK_BACK)
         logger.info(f"Collected {len(news_results)} results from Google News")
         
-        # Collect data from Google Custom Search
+        # Collect from Google Custom Search
         search_results = self.collect_from_custom_search()
         logger.info(f"Collected {len(search_results)} results from Google Custom Search")
         
-        # Deduplicate and combine results
-        combined_results = self.deduplicate_results(news_results, search_results)
-        logger.info(f"After deduplication: {len(combined_results)} unique startup funding events")
+        # Get scraped results if enabled
+        ninja_results = []
+        if self.use_ninja_squirrels:
+            ninja_results = self.collect_from_ninja_squirrels()
+            logger.info(f"Collected {len(ninja_results)} results from Ninja Squirrel Gathering")
         
-        # Generate sample data if no results were found (for development/testing)
-        if not combined_results:
-            logger.warning("No results found. Generating sample data for testing.")
-            combined_results = self._generate_sample_data()
+        # Combine all results
+        combined_results = self.deduplicate_results(news_results + search_results + ninja_results, [])
+        logger.info(f"Combined and deduplicated to {len(combined_results)} unique startups")
         
-        # Save the results
-        self._save_results(combined_results)
+        # Update the database
+        updated_results = self.update_startup_database(combined_results)
+        logger.info(f"Database updated with {len(updated_results)} new or updated entries")
         
-        return combined_results
+        # Save the results to a file
+        self._save_results(updated_results)
+        
+        return updated_results
     
     def _save_results(self, results):
         """
@@ -361,7 +471,8 @@ class StartupCollector:
                 "url": "https://example.com/ai-assistant-funding",
                 "published_date": datetime.now().strftime("%Y-%m-%d"),
                 "source": "TechCrunch",
-                "investors": ["Andreessen Horowitz", "Sequoia Capital"]
+                "investors": ["Andreessen Horowitz", "Sequoia Capital"],
+                "discovery_date": datetime.now().strftime("%Y-%m-%d")
             },
             {
                 "company_name": "Quantum Cloud Systems",
@@ -373,7 +484,8 @@ class StartupCollector:
                 "url": "https://example.com/quantum-cloud-funding",
                 "published_date": (datetime.now() - timedelta(days=2)).strftime("%Y-%m-%d"),
                 "source": "VentureBeat",
-                "investors": ["Y Combinator", "First Round Capital"]
+                "investors": ["Y Combinator", "First Round Capital"],
+                "discovery_date": datetime.now().strftime("%Y-%m-%d")
             },
             {
                 "company_name": "HealthAI Labs",
@@ -385,7 +497,8 @@ class StartupCollector:
                 "url": "https://example.com/healthai-funding",
                 "published_date": (datetime.now() - timedelta(days=5)).strftime("%Y-%m-%d"),
                 "source": "Forbes",
-                "investors": ["Khosla Ventures", "GV"]
+                "investors": ["Khosla Ventures", "GV"],
+                "discovery_date": datetime.now().strftime("%Y-%m-%d")
             },
             {
                 "company_name": "SecureChain",
@@ -397,7 +510,8 @@ class StartupCollector:
                 "url": "https://example.com/securechain-funding",
                 "published_date": (datetime.now() - timedelta(days=3)).strftime("%Y-%m-%d"),
                 "source": "Business Insider",
-                "investors": ["Accel", "Lightspeed Venture Partners"]
+                "investors": ["Accel", "Lightspeed Venture Partners"],
+                "discovery_date": datetime.now().strftime("%Y-%m-%d")
             },
             {
                 "company_name": "EcoLogistics",
@@ -409,7 +523,8 @@ class StartupCollector:
                 "url": "https://example.com/ecologistics-funding",
                 "published_date": (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d"),
                 "source": "TechCrunch",
-                "investors": ["Founders Fund", "SV Angel"]
+                "investors": ["Founders Fund", "SV Angel"],
+                "discovery_date": datetime.now().strftime("%Y-%m-%d")
             }
         ]
 
